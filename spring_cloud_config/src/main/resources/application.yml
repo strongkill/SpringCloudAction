@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: config
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/Codeprh/springCloud_ConfigResp.git
+          username: Codingprh@gmail.com
+#          todo:上线需要屏蔽密码
+          password: prh18312838687
+          basedir: /Users/codingprh/Documents/javaSoftware/spring_cloud_all/spring_cloud_config/basedir
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+management:
+  endpoints:
+    web:
+      expose: "*"
+server:
+  port: 8083

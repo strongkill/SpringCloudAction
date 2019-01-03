@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: gateway
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        service-id: CONFIG
+      profile: test
+      name: gateway
+zuul:
+  #全部服务忽略敏感头(全部服务都可以传递cookie)
+  sensitive-headers:
+  routes:
+  # /myProduct/product/list -> /product/product/list
+    product:
+      path: /myProduct/**
+      serviceId: product
+      sensitiveHeaders:
+
+
