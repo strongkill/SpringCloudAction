@@ -4,19 +4,22 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.codingprh.springCloud</groupId>
-        <artifactId>spring_cloud_product_two</artifactId>
+        <artifactId>spring_cloud_all</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
-    <groupId>com.codingprh.springCloud</groupId>
-    <artifactId>product_common</artifactId>
+    <groupId>com.codingprh.common</groupId>
+    <artifactId>spring_cloud_common</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>product_common</name>
+    <name>spring_cloud_common</name>
+    <description>springCloud通用模块配置</description>
 
-    <description>product通用模块</description>
+
     <dependencies>
+
+
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
     </dependencies>
     <build>
@@ -30,9 +33,10 @@
                     <!--The skip property allows to skip the execution of the Spring Boot maven plugin altogether.-->
                     <skip>true</skip>
                 </configuration>
-                
+
             </plugin>
         </plugins>
     </build>
+
 
 </project>

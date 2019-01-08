@@ -17,12 +17,11 @@
     <modules>
         <module>product_common</module>
         <module>product_client</module>
+        <module>product_server</module>
     </modules>
     <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot</artifactId>
-        </dependency>
+
     </dependencies>
+    <!--todo：配置不使用spring-boot-maven-plugin插件-->
 
 </project>

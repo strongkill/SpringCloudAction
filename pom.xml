@@ -22,6 +22,7 @@
         <module>spring_cloud_config</module>
         <module>spring_cloud_gateway</module>
         <module>spring_cloud_product_two</module>
+        <module>spring_cloud_common</module>
     </modules>
 
     <properties>
