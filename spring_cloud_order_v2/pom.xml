@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.codingprh.springCloud</groupId>
+        <artifactId>spring_cloud_all</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath/>
+    </parent>
+    <groupId>com.codingprh.springCloud</groupId>
+    <artifactId>spring_cloud_order_v2</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>spring_cloud_order_v2</name>
+    <description>spring_cloud_order第二版</description>
+    <packaging>pom</packaging>
+    <modules>
+        <module>order_client</module>
+        <module>order_common</module>
+        <module>order_server</module>
+    </modules>
+
+</project>

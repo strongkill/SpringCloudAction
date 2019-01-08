@@ -23,6 +23,7 @@
         <module>spring_cloud_gateway</module>
         <module>spring_cloud_product_two</module>
         <module>spring_cloud_common</module>
+        <module>spring_cloud_order_v2</module>
     </modules>
 
     <properties>

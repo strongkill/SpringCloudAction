@@ -1,9 +1,9 @@
 package com.codingprh.springcloud.product_server.message;
 
 
+import com.codingprh.common.spring_cloud_common.utils.JsonUtil;
 import com.codingprh.springcloud.product_common.entity.ProductInfoOutput;
 import com.codingprh.springcloud.product_server.service.ProductInfoService;
-import com.codingprh.springcloud.product_server.utils.JsonUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.Queue;
