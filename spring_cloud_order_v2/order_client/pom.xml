@@ -6,13 +6,27 @@
         <groupId>com.codingprh.springCloud</groupId>
         <artifactId>spring_cloud_order_v2</artifactId>
         <version>0.0.1-SNAPSHOT</version>
-		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.codingprh.springCloud</groupId>
 	<artifactId>order_client</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>order_client</name>
 	<description>Demo project for Spring Boot</description>
-    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!--解决神器问题：client模块找不到common实体问题和解决install需要添加main方法问题-->
+                    <!--Skip the execution-->
+                    <!--The skip property allows to skip the execution of the Spring Boot maven plugin altogether.-->
+                    <skip>true</skip>
+                </configuration>
+
+            </plugin>
+        </plugins>
+    </build>
+
 
 </project>

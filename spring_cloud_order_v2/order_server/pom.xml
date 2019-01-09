@@ -6,7 +6,6 @@
         <groupId>com.codingprh.springCloud</groupId>
         <artifactId>spring_cloud_order_v2</artifactId>
         <version>0.0.1-SNAPSHOT</version>
-        <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.codingprh.springCloud</groupId>
     <artifactId>order_server</artifactId>

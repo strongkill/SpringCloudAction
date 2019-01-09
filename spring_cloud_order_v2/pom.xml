@@ -12,12 +12,13 @@
     <artifactId>spring_cloud_order_v2</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>spring_cloud_order_v2</name>
-    <description>spring_cloud_order第二版</description>
     <packaging>pom</packaging>
+    <description>spring_cloud_order第二版</description>
     <modules>
-        <module>order_client</module>
         <module>order_common</module>
+        <module>order_client</module>
         <module>order_server</module>
     </modules>
+    <dependencies></dependencies>
 
 </project>
