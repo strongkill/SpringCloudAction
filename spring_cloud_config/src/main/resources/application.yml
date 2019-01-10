@@ -9,7 +9,7 @@ spring:
           username: Codingprh@gmail.com
 #          todo:上线需要屏蔽密码
           password: prh18312838687
-          basedir: /Users/codingprh/Documents/javaSoftware/spring_cloud_all/spring_cloud_config/basedir
+          basedir: /Users/codingprh/Documents/javaSoftware/spring_cloud_action/spring_cloud_config/basedir
 eureka:
   client:
     service-url:

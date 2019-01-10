@@ -2,19 +2,15 @@ package com.codingprh.springcloud.order_server.controller;
 
 
 import com.codingprh.common.spring_cloud_common.entity.ResultVO;
-import com.codingprh.common.spring_cloud_common.utils.KeysUtils;
 import com.codingprh.common.spring_cloud_common.utils.ResultVOUtils;
 import com.codingprh.springcloud.order_common.message.OrderMessage;
 import com.codingprh.springcloud.order_server.converter.OrderForm2OrderDTOConverter;
 import com.codingprh.springcloud.order_server.dto.OrderDTO;
-import com.codingprh.springcloud.order_server.entity.OrderDetail;
 import com.codingprh.springcloud.order_server.enums.OrderExceptionEnum;
 import com.codingprh.springcloud.order_server.exception.OrderException;
 import com.codingprh.springcloud.order_server.form.OrderForm;
 import com.codingprh.springcloud.order_server.service.OrderService;
-import com.codingprh.springcloud.product_common.entity.ProductInfoOutput;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,9 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 描述:
@@ -80,21 +75,20 @@ public class OrderController {
             throw new OrderException(OrderExceptionEnum.SHOPPING_CART_EMPTY);
         }
         Map<String, String> result = new HashMap<>();
-        result.put("order", orderService.create(orderDTO).getOrderId());
+        result.put("order", orderService.createSync(orderDTO).getOrderId());
 
         return ResultVOUtils.success(result);
 
     }
 
     /**
-     * 异步下单的流程
+     * mq异步下单的流程
      *
      * @param orderMessage
      */
     @PostMapping("/createOrder")
     public void createOrder(@RequestBody OrderMessage orderMessage) {
-       
-
+        orderService.mqCreateOrder(orderMessage);
     }
 
 

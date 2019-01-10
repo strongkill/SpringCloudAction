@@ -1,6 +1,9 @@
 package com.codingprh.springcloud.order_common.message;
 
+import com.codingprh.springcloud.product_common.entity.DecreaseStockInput;
 import lombok.Data;
+
+import java.util.List;
 
 
 /**
@@ -12,29 +15,30 @@ import lombok.Data;
  */
 @Data
 public class OrderMessage {
-    /**
-     * 买家姓名
-     */
-    private String name;
+    private String orderId;
 
     /**
-     * 买家手机号
+     * 买家名字.
      */
-    private String phone;
+    private String buyerName;
 
     /**
-     * 买家地址
+     * 买家手机号.
      */
-    private String address;
+    private String buyerPhone;
 
     /**
-     * 买家微信openid
+     * 买家地址.
      */
-    private String openid;
+    private String buyerAddress;
 
     /**
-     * 购物车
+     * 买家微信Openid.
      */
-    private String items;
+    private String buyerOpenid;
+    /**
+     * 减库存信息
+     */
+    private List<DecreaseStockInput> DecreaseStockInput;
 
 }

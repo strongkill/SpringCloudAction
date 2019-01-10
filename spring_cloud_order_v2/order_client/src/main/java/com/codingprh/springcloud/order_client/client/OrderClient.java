@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
  * @create 2019-01-09 6:48 PM
  */
 @FeignClient(name = "order", fallback = OrderClient.OrderClientFallback.class)
-
 public interface OrderClient {
 
     @PostMapping("/order/createOrder")

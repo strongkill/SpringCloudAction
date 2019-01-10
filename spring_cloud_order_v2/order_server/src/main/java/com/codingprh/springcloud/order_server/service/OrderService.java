@@ -1,7 +1,9 @@
 package com.codingprh.springcloud.order_server.service;
 
 
+import com.codingprh.springcloud.order_common.message.OrderMessage;
 import com.codingprh.springcloud.order_server.dto.OrderDTO;
+import org.springframework.web.bind.annotation.RequestBody;
 
 /**
  * 描述:
@@ -19,7 +21,15 @@ public interface OrderService {
      */
     OrderDTO create(OrderDTO orderDTO);
 
+    /**
+     * v2：异步创建订单
+     *
+     * @param orderDTO
+     * @return
+     */
     OrderDTO createSync(OrderDTO orderDTO);
+
+    void mqCreateOrder(OrderMessage orderMessage);
 
 
 }

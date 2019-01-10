@@ -6,15 +6,18 @@ import com.codingprh.common.spring_cloud_common.utils.JsonUtil;
 import com.codingprh.common.spring_cloud_common.utils.KeysUtils;
 import com.codingprh.springcloud.order_common.message.OrderMessage;
 import com.codingprh.springcloud.order_server.converter.ObjectToMapConverter;
+import com.codingprh.springcloud.order_server.converter.OrderForm2OrderDTOConverter;
 import com.codingprh.springcloud.order_server.dto.OrderDTO;
 import com.codingprh.springcloud.order_server.entity.OrderDetail;
 import com.codingprh.springcloud.order_server.entity.OrderMaster;
 import com.codingprh.springcloud.order_server.enums.OrderStatusEnum;
 import com.codingprh.springcloud.order_server.enums.PayStatusEnum;
 import com.codingprh.springcloud.order_server.exception.OrderException;
+import com.codingprh.springcloud.order_server.form.OrderForm;
 import com.codingprh.springcloud.order_server.repository.OrderDetailRepository;
 import com.codingprh.springcloud.order_server.repository.OrderMasterRepository;
 import com.codingprh.springcloud.order_server.service.OrderService;
+import com.codingprh.springcloud.order_server.utils.OrderDetailUtils;
 import com.codingprh.springcloud.product_client.client.clientInterface.ProductClient;
 import com.codingprh.springcloud.product_common.entity.ProductInfoOutput;
 import lombok.extern.slf4j.Slf4j;
@@ -130,6 +133,7 @@ public class OrderServiceImpl implements OrderService {
         } catch (Exception e) {
             e.printStackTrace();
             log.error(e.getMessage());
+            throw e;
         }
 
         //step 2:redis预减库存
@@ -137,8 +141,9 @@ public class OrderServiceImpl implements OrderService {
 
             String productId = orderDetail.getProductId();
             Integer quantity = orderDetail.getProductQuantity();
-
-            ProductInfoOutput redisPro = (ProductInfoOutput) redisTemplate.opsForHash().entries(String.format(RedisConstant.PRODUCT_TEMPLATE, productId));
+            //todo：可以直接转换吗？
+            //ProductInfoOutput redisPro = (ProductInfoOutput) redisTemplate.opsForHash().entries(String.format(RedisConstant.PRODUCT_TEMPLATE, productId));
+            ProductInfoOutput redisPro = redisMap2ProductInfoOutput(orderDetail.getProductId());
             Integer productStock = redisPro.getProductStock() - quantity;
             if (productStock < 0) {
                 redisTemplate.opsForSet().add(RedisConstant.PRODUCT_FINISH_SET, String.format(RedisConstant.PRODUCT_TEMPLATE, productId));
@@ -147,18 +152,54 @@ public class OrderServiceImpl implements OrderService {
             redisTemplate.opsForHash().put(String.format(RedisConstant.PRODUCT_TEMPLATE, orderDetail.getProductId()), "productStock", productStock.toString());
 
         }
-        
+
         OrderMessage orderMessage = new OrderMessage();
         BeanUtils.copyProperties(orderDTO, orderMessage);
+
+
+        orderMessage.setDecreaseStockInput(OrderDetailUtils.OrderDeatils2DecreaseStockInputs(orderDTO.getOrderDetailList()));
 
         //step 3:发送异步消息
         threadPoolTaskExecutor.submit(() -> {
             amqpTemplate.convertAndSend("orderWaitSync", JsonUtil.toJson(orderMessage));
         });
 
-        
+
         return orderDTO;
 
+    }
+
+    @Override
+    @Transactional
+    public void mqCreateOrder(OrderMessage orderMessage) {
+        log.info("调用创建订单服务");
+        List<OrderDetail> orderDetailList= OrderDetailUtils.DecreaseStockInputs2OrderDeatils(orderMessage.getDecreaseStockInput());
+        String orderId = orderMessage.getOrderId();
+
+        //计算总价
+        BigDecimal orderAmout = new BigDecimal(BigInteger.ZERO);
+        for (OrderDetail orderDetail : orderDetailList) {
+            ProductInfoOutput productInfo = redisMap2ProductInfoOutput(orderDetail.getProductId());
+            if (Objects.equals(orderDetail.getProductId(), productInfo.getProductId())) {
+                //计算单价
+                orderAmout = new BigDecimal(orderDetail.getProductQuantity()).multiply(productInfo.getProductPrice()).add(orderAmout);
+                BeanUtils.copyProperties(productInfo, orderDetail);
+                orderDetail.setOrderId(orderId);
+                orderDetail.setDetailId(KeysUtils.generateUniqueKey());
+            }
+
+        }
+
+        OrderMaster orderMaster = new OrderMaster();
+        BeanUtils.copyProperties(orderMessage, orderMaster);
+        orderMaster.setOrderAmount(orderAmout);
+        orderMaster.setOrderStatus(OrderStatusEnum.WAIT.getCode());
+        orderMaster.setPayStatus(PayStatusEnum.WAIT.getCode());
+        //异步订单入库：直接穿透db
+        threadPoolTaskExecutor.submit(() -> {
+            orderDetailRepository.saveAll(orderDetailList);
+            orderMasterRepository.save(orderMaster);
+        });
     }
 
     /**
