@@ -4,6 +4,7 @@ package com.codingprh.springcloud.order_server.service.impl;
 import com.codingprh.common.spring_cloud_common.constant.RedisConstant;
 import com.codingprh.common.spring_cloud_common.utils.JsonUtil;
 import com.codingprh.common.spring_cloud_common.utils.KeysUtils;
+import com.codingprh.springcloud.order_common.message.OrderMessage;
 import com.codingprh.springcloud.order_server.converter.ObjectToMapConverter;
 import com.codingprh.springcloud.order_server.dto.OrderDTO;
 import com.codingprh.springcloud.order_server.entity.OrderDetail;
@@ -31,9 +32,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.codingprh.springcloud.order_server.enums.OrderExceptionEnum.INVENTORY_SHORTAGE;
-import static com.codingprh.springcloud.order_server.enums.OrderExceptionEnum.MAP_CONVERTER_OBJECT_ERROR;
-import static com.codingprh.springcloud.order_server.enums.OrderExceptionEnum.PRODUCT_NOT_FOUND;
+import static com.codingprh.springcloud.order_server.enums.OrderExceptionEnum.*;
 
 
 /**
@@ -74,6 +73,90 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public synchronized OrderDTO create(OrderDTO orderDTO) {
         createProcess(orderDTO);
+        return orderDTO;
+
+    }
+
+    /**
+     * 第二版：实现秒杀的设计
+     * todo:抛出异常之后，订单的状态修改为什么
+     *
+     * @param orderDTO
+     * @return
+     */
+    @Override
+    public OrderDTO createSync(OrderDTO orderDTO) {
+
+        String orderId = KeysUtils.generateUniqueKey();
+        orderDTO.setOrderId(orderId);
+
+        List<OrderDetail> orderDetailList = orderDTO.getOrderDetailList();
+        List<String> productIds = orderDetailList.stream().map(OrderDetail::getProductId).collect(Collectors.toList());
+
+        List<ProductInfoOutput> productInfoOutputList = new ArrayList<>();
+
+
+        //step 1:读取库存（1、redis，2、db）的商品
+        try {
+            for (String productId : productIds) {
+
+                //已经完成抢购的商品redis，直接抛出异常
+                Boolean isFinish = redisTemplate.opsForSet().isMember(RedisConstant.PRODUCT_FINISH_SET, String.format(RedisConstant.PRODUCT_TEMPLATE, productId));
+                if (isFinish) {
+                    throw new OrderException(SHOPPING_ISFINISH);
+                }
+
+                ProductInfoOutput productInfoOutput = redisMap2ProductInfoOutput(productId);
+
+                if (Objects.isNull(productInfoOutput.getProductId())) {
+                    //保护机制：如果商品在redis找不到，从数据库中查找
+                    //todo：数据库穿透，恶意攻击
+                    List<ProductInfoOutput> dbProductList = productClient.listForOrder(Arrays.asList(productId));
+                    if (dbProductList.isEmpty()) {
+                        throw new OrderException(PRODUCT_NOT_FOUND);
+                    }
+                    productInfoOutputList.addAll(dbProductList);
+                    //加入到缓存中，一天！！
+                    for (ProductInfoOutput dbproductInfoOutput : dbProductList) {
+                        Map<String, String> map = ObjectToMapConverter.Object2MapString(dbproductInfoOutput);
+                        redisTemplate.opsForHash().putAll(String.format(RedisConstant.PRODUCT_TEMPLATE, dbproductInfoOutput.getProductId()), map);
+                        redisTemplate.expire(String.format(RedisConstant.PRODUCT_TEMPLATE, dbproductInfoOutput.getProductId()), 1, TimeUnit.DAYS);
+                    }
+                } else {
+
+                    productInfoOutputList.add(productInfoOutput);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error(e.getMessage());
+        }
+
+        //step 2:redis预减库存
+        for (OrderDetail orderDetail : orderDetailList) {
+
+            String productId = orderDetail.getProductId();
+            Integer quantity = orderDetail.getProductQuantity();
+
+            ProductInfoOutput redisPro = (ProductInfoOutput) redisTemplate.opsForHash().entries(String.format(RedisConstant.PRODUCT_TEMPLATE, productId));
+            Integer productStock = redisPro.getProductStock() - quantity;
+            if (productStock < 0) {
+                redisTemplate.opsForSet().add(RedisConstant.PRODUCT_FINISH_SET, String.format(RedisConstant.PRODUCT_TEMPLATE, productId));
+                throw new OrderException(INVENTORY_SHORTAGE);
+            }
+            redisTemplate.opsForHash().put(String.format(RedisConstant.PRODUCT_TEMPLATE, orderDetail.getProductId()), "productStock", productStock.toString());
+
+        }
+        
+        OrderMessage orderMessage = new OrderMessage();
+        BeanUtils.copyProperties(orderDTO, orderMessage);
+
+        //step 3:发送异步消息
+        threadPoolTaskExecutor.submit(() -> {
+            amqpTemplate.convertAndSend("orderWaitSync", JsonUtil.toJson(orderMessage));
+        });
+
+        
         return orderDTO;
 
     }

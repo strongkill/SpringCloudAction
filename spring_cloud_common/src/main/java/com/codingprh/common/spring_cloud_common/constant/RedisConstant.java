@@ -6,4 +6,5 @@ package com.codingprh.common.spring_cloud_common.constant;
  */
 public interface RedisConstant {
     String PRODUCT_TEMPLATE = "product:%s";
+    String PRODUCT_FINISH_SET = "PRODUCT_FINISH_SET";
 }

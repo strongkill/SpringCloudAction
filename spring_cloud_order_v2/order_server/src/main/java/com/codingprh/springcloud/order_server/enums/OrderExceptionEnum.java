@@ -18,7 +18,9 @@ public enum OrderExceptionEnum {
 
     PRODUCT_NOT_FOUND(10004, "商品不存在"),
 
-    INVENTORY_SHORTAGE(1005, "库存不足");
+    INVENTORY_SHORTAGE(1005, "库存不足"),
+
+    SHOPPING_ISFINISH(1006, "商品抢购结束");
     private Integer code;
     private String msg;
 
