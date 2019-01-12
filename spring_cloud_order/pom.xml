@@ -73,6 +73,8 @@
             <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
         </dependency>
     </dependencies>
-
+    <build>
+        <finalName>order_v1</finalName>
+    </build>
 
 </project>
