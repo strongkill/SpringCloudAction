@@ -6,14 +6,12 @@ import com.codingprh.common.spring_cloud_common.utils.JsonUtil;
 import com.codingprh.common.spring_cloud_common.utils.KeysUtils;
 import com.codingprh.springcloud.order_common.message.OrderMessage;
 import com.codingprh.springcloud.order_server.converter.ObjectToMapConverter;
-import com.codingprh.springcloud.order_server.converter.OrderForm2OrderDTOConverter;
 import com.codingprh.springcloud.order_server.dto.OrderDTO;
 import com.codingprh.springcloud.order_server.entity.OrderDetail;
 import com.codingprh.springcloud.order_server.entity.OrderMaster;
 import com.codingprh.springcloud.order_server.enums.OrderStatusEnum;
 import com.codingprh.springcloud.order_server.enums.PayStatusEnum;
 import com.codingprh.springcloud.order_server.exception.OrderException;
-import com.codingprh.springcloud.order_server.form.OrderForm;
 import com.codingprh.springcloud.order_server.repository.OrderDetailRepository;
 import com.codingprh.springcloud.order_server.repository.OrderMasterRepository;
 import com.codingprh.springcloud.order_server.service.OrderService;
@@ -88,6 +86,7 @@ public class OrderServiceImpl implements OrderService {
      * @return
      */
     @Override
+    @Transactional
     public OrderDTO createSync(OrderDTO orderDTO) {
 
         String orderId = KeysUtils.generateUniqueKey();
@@ -137,21 +136,8 @@ public class OrderServiceImpl implements OrderService {
         }
 
         //step 2:redis预减库存
-        for (OrderDetail orderDetail : orderDetailList) {
+        descRedis(orderDetailList);
 
-            String productId = orderDetail.getProductId();
-            Integer quantity = orderDetail.getProductQuantity();
-            //todo：可以直接转换吗？
-            //ProductInfoOutput redisPro = (ProductInfoOutput) redisTemplate.opsForHash().entries(String.format(RedisConstant.PRODUCT_TEMPLATE, productId));
-            ProductInfoOutput redisPro = redisMap2ProductInfoOutput(orderDetail.getProductId());
-            Integer productStock = redisPro.getProductStock() - quantity;
-            if (productStock < 0) {
-                redisTemplate.opsForSet().add(RedisConstant.PRODUCT_FINISH_SET, String.format(RedisConstant.PRODUCT_TEMPLATE, productId));
-                throw new OrderException(INVENTORY_SHORTAGE);
-            }
-            redisTemplate.opsForHash().put(String.format(RedisConstant.PRODUCT_TEMPLATE, orderDetail.getProductId()), "productStock", productStock.toString());
-
-        }
 
         OrderMessage orderMessage = new OrderMessage();
         BeanUtils.copyProperties(orderDTO, orderMessage);
@@ -169,11 +155,34 @@ public class OrderServiceImpl implements OrderService {
 
     }
 
+    /**
+     * v2:同步减库存
+     *
+     * @param orderDetailList
+     */
+    public synchronized void descRedis(List<OrderDetail> orderDetailList) {
+        for (OrderDetail orderDetail : orderDetailList) {
+
+            String productId = orderDetail.getProductId();
+            Integer quantity = orderDetail.getProductQuantity();
+            //todo：可以直接转换吗？
+            //ProductInfoOutput redisPro = (ProductInfoOutput) redisTemplate.opsForHash().entries(String.format(RedisConstant.PRODUCT_TEMPLATE, productId));
+            ProductInfoOutput redisPro = redisMap2ProductInfoOutput(orderDetail.getProductId());
+            Integer productStock = redisPro.getProductStock() - quantity;
+            if (productStock < 0) {
+                redisTemplate.opsForSet().add(RedisConstant.PRODUCT_FINISH_SET, String.format(RedisConstant.PRODUCT_TEMPLATE, productId));
+                throw new OrderException(INVENTORY_SHORTAGE);
+            }
+            redisTemplate.opsForHash().put(String.format(RedisConstant.PRODUCT_TEMPLATE, orderDetail.getProductId()), "productStock", productStock.toString());
+        }
+
+    }
+
     @Override
     @Transactional
     public void mqCreateOrder(OrderMessage orderMessage) {
         log.info("调用创建订单服务");
-        List<OrderDetail> orderDetailList= OrderDetailUtils.DecreaseStockInputs2OrderDeatils(orderMessage.getDecreaseStockInput());
+        List<OrderDetail> orderDetailList = OrderDetailUtils.DecreaseStockInputs2OrderDeatils(orderMessage.getDecreaseStockInput());
         String orderId = orderMessage.getOrderId();
 
         //计算总价
