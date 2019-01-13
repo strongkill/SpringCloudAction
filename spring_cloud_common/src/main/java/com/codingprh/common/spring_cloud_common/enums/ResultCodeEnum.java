@@ -17,8 +17,7 @@ public enum ResultCodeEnum {
     //4xx(请求错误) 这些状态代码表示请求可能出错，妨碍了服务器的处理
     REQUEST_ERROR(400, "请求错误"),
     //5xx(服务器错误)这些状态代码表示服务器在尝试处理请求时发生内部错误。 这些错误可能是服务器本身的错误，而不是请求出错
-    SERVER_ERROR(500,"服务器异常"),
-    ;
+    SERVER_ERROR(500, "服务器异常"),;
     private Integer code;
     private String msg;
 
@@ -26,4 +25,5 @@ public enum ResultCodeEnum {
         this.code = code;
         this.msg = msg;
     }
+
 }

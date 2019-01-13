@@ -12,8 +12,22 @@ import com.codingprh.common.spring_cloud_common.enums.ResultCodeEnum;
  * @create 2018-12-25 3:37 PM
  */
 public class ResultVOUtils {
+
     public static ResultVO success(Object object) {
         return new ResultVO(ResultCodeEnum.SUCESS, object);
     }
+
+    public static ResultVO success() {
+        return new ResultVO(ResultCodeEnum.SUCESS, null);
+    }
+
+    public static ResultVO error(ResultCodeEnum resultCodeEnum) {
+        return new ResultVO(resultCodeEnum);
+    }
+
+    public static ResultVO error(Object object) {
+        return new ResultVO(ResultCodeEnum.REQUEST_ERROR, object);
+    }
+
 
 }

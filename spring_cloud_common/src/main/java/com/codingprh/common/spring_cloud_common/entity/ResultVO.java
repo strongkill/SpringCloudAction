@@ -28,4 +28,8 @@ public class ResultVO<T> {
         this.msg = resultCodeEnum.getMsg();
         this.data = data;
     }
+    public ResultVO(ResultCodeEnum resultCodeEnum) {
+        this.code = resultCodeEnum.getCode();
+        this.msg = resultCodeEnum.getMsg();
+    }
 }
