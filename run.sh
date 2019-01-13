@@ -6,10 +6,11 @@
 
 # docker push hub.c.163.com/springcloud/eureka
 
-echo "------启动eureka服务---";
+# echo "------启动eureka服务---";
 
 
-
+open /Applications/Docker.app
+sleep 10
 echo "启动redis"
 docker start d3334b8df3c7
 echo "启动redis完成"
