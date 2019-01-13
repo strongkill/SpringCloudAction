@@ -13,9 +13,22 @@ zuul:
   sensitive-headers:
   routes:
   # /myProduct/product/list -> /product/product/list
+  # 简洁写法v2：product: /myProduct/**
     product:
       path: /myProduct/**
       serviceId: product
       sensitiveHeaders:
+      
+    order:
+      path: /myOrder/**
+      serviceId: order
+      sensitiveHeaders:
+  #不暴露接口：如何在yml写set,**通配符的使用
+  ignored-patterns:
+    - /**/order/create/sync
+
+ribbon:
+  ReadTimeout: 5000
+  SocketTimeout: 5000
 
 

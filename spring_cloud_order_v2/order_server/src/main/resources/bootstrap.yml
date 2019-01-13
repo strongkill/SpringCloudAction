@@ -8,6 +8,10 @@ spring:
         service-id: CONFIG
       profile: test
       name: order
+    bus:
+      trace:
+        enabled: true
+      enabled: true
 #todo:超时时间的学习
 feign:
   client:

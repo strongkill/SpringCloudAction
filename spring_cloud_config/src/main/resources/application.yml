@@ -1,7 +1,17 @@
 spring:
   application:
     name: config
+
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: guest
+    password: guest
   cloud:
+    bus:
+      enabled: true
+      trace:
+        enabled: true
     config:
       server:
         git:
@@ -9,15 +19,20 @@ spring:
           username: Codingprh@gmail.com
 #          todo:上线需要屏蔽密码
           password: prh18312838687
-          basedir: /Users/codingprh/Documents/javaSoftware/spring_cloud_action/spring_cloud_config/basedir
+          #basedir: /Users/codingprh/Documents/javaSoftware/spring_cloud_action/spring_cloud_config/basedir
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
-      
+#mmp：大坑，配置文件不能这样写，不然就不能实现自动更新
+#management:
+#  endpoints:
+#    web:
+#      expose: "*"
 management:
   endpoints:
     web:
-      expose: "*"
+      exposure:
+        include: bus-refresh
 server:
   port: 8083
