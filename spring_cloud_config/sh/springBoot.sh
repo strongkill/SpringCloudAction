@@ -21,7 +21,8 @@ function start()
         echo "$SpringBoot is running..."
     else
         echo "Start $SpringBoot success..."
-        nohup java -jar -Xms128m -Xmx512m $SpringBoot > /dev/null 2>&1 &
+        # todo:test:nohup ./natapp -authtoken=9c6d36913ef942d1 -log=stdout -loglevel=ERROR &
+        nohup java -jar -Xms128m -Xmx512m $SpringBoot -log=stdout -loglevel=ERROR  > /dev/null 2>&1 &
     fi
 }
 
