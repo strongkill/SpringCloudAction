@@ -23,6 +23,12 @@ zuul:
       path: /myOrder/**
       serviceId: order
       sensitiveHeaders:
+      
+    user:
+      path: /myUser/**
+      serviceId: user
+      sensitiveHeaders:
+      
   #不暴露接口：如何在yml写set,**通配符的使用
   ignored-patterns:
     - /**/order/create/sync

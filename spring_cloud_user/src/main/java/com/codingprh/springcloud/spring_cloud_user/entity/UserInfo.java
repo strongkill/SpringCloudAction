@@ -12,14 +12,14 @@ import javax.persistence.Id;
 @Entity
 public class UserInfo {
 
-	@Id
-	private String id;
+    @Id
+    private String id;
 
-	private String username;
+    private String username;
 
-	private String password;
+    private String password;
 
-	private String openid;
+    private String openid;
 
-	private Integer role;
+    private Integer role;
 }
